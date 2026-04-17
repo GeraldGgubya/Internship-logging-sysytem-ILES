@@ -11,3 +11,6 @@ class Placement(models.Model):
     enddate = models.DateField()
     def __str__(self):
         return f"{self.student.username} - {self.company_name}"
+    def clean(self):
+        if self.enddate < self.startdate:
+            raise ValidationError('End date cannot be before start date.')
