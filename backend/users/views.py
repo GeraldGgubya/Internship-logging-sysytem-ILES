@@ -14,3 +14,16 @@ def student_dashboard(request):
         'placements': placement.company_name if placements else None, # type: ignore
         'total_logs': logs.count(),  # type: ignore
     })
+from .permissions import IsSupervisor # type: ignore
+from django.contrib.auth import get_user_model
+from weeklylogs.models import WeeklyLog
+User = get_user_model()
+@api_view(['GET'])
+@permission_classes([IsSupervisor])
+def supervisor_dashboard(request):
+    students = User.objects.filter(role ='Students')
+    logs = WeeklyLog.objects.all()
+    return Response({
+        'total_students': students.count(),
+        'total_logs': logs.count(),
+    })
