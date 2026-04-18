@@ -1,17 +1,16 @@
-from django.shortcuts import render
-
-# Create your views here.
-from rest_framework import viewsets
-from .models import User
-from .serializers import UserSerializer
-from rest_framework.permissions import IsAuthenticated
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        user = self.request.user
-        if user.role == 'supervisor':
-            return User.objects.all()
-        return User.objects.filter(id=user.id)
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from .permissions import IsStudent # type: ignore
+from weeklylogs.models import WeeklyLog
+from placements.models import Placement
+@api_view(['GET'])
+@permission_classes([IsStudent])
+def student_dashboard(request):
+    user = request.user
+    placements = Placement.objects.filter(student=user).first()
+    weekly_logs = WeeklyLog.objects.filter(student=user)
+    return Response({
+        'user': user.username,
+        'placements': placement.company_name if placements else None, # type: ignore
+        'total_logs': logs.count(),  # type: ignore
+    })
