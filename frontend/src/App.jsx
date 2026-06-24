@@ -4,13 +4,16 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./pages/authenticationPage/Login";
 
 // Student
-import StudentDashboard  from "./pages/student/StudentDashboard";
-import StudentLogs       from "./pages/student/StudentLogs";
-import CreateLog         from "./pages/student/CreateLog";
+import StudentDashboard   from "./pages/student/StudentDashboard";
+import StudentLogs        from "./pages/student/StudentLogs";
+import CreateLog          from "./pages/student/CreateLog";
+import StudentPlacement   from "./pages/student/StudentPlacement";
+import StudentEvaluations from "./pages/student/StudentEvaluations";
 
 // Work Supervisor
-import WorkSupervisorDashboard   from "./pages/worksupervisor/WorkSupervisorDashboard";
-import WorkSupervisorReviewLogs  from "./pages/worksupervisor/WorkSupervisorReviewLogs";
+import WorkSupervisorDashboard  from "./pages/worksupervisor/WorkSupervisorDashboard";
+import WorkSupervisorReviewLogs from "./pages/worksupervisor/WorkSupervisorReviewLogs";
+import WorkSupervisorStudents   from "./pages/worksupervisor/WorkSupervisorStudents";
 
 // Academic Supervisor
 import AcademicSupervisorDashboard from "./pages/academicsupervisor/AcademicSupervisorDashboard";
@@ -22,19 +25,22 @@ function App() {
     return (
         <Routes>
             {/* Auth */}
-            <Route path="/"  element={<Login />} />
+            <Route path="/" element={<Login />} />
 
-            {/* Student routes */}
-            <Route path="/student/dashboard"       element={<StudentDashboard />} />
-            <Route path="/student/logs"            element={<StudentLogs />} />
-            <Route path="/student/logs/create"     element={<CreateLog />} />
-            <Route path="/student/logs/:id/edit"   element={<CreateLog />} />
+            {/* Student */}
+            <Route path="/student/dashboard"     element={<StudentDashboard />} />
+            <Route path="/student/logs"          element={<StudentLogs />} />
+            <Route path="/student/logs/create"   element={<CreateLog />} />
+            <Route path="/student/logs/:id/edit" element={<CreateLog />} />
+            <Route path="/student/placement"     element={<StudentPlacement />} />
+            <Route path="/student/evaluations"   element={<StudentEvaluations />} />
 
-            {/* Work Supervisor routes */}
-            <Route path="/worksupervisor/dashboard"   element={<WorkSupervisorDashboard />} />
-            <Route path="/worksupervisor/reviewlogs"  element={<WorkSupervisorReviewLogs />} />
+            {/* Work Supervisor */}
+            <Route path="/worksupervisor/dashboard"  element={<WorkSupervisorDashboard />} />
+            <Route path="/worksupervisor/reviewlogs" element={<WorkSupervisorReviewLogs />} />
+            <Route path="/worksupervisor/students"   element={<WorkSupervisorStudents />} />
 
-            {/* Academic Supervisor routes */}
+            {/* Academic Supervisor */}
             <Route path="/academicsupervisor/dashboard"   element={<AcademicSupervisorDashboard />} />
             <Route path="/academicsupervisor/reviewlogs"  element={<AcademicReviewLogs />} />
             <Route path="/academicsupervisor/evaluations" element={<AcademicEvaluations />} />
