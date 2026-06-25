@@ -8,10 +8,11 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ["username"]
 
     ROLE_CHOICES = (
-        ('student', 'Student'),
-        ('supervisor', 'Supervisor'),
-        ('admin', 'Admin'),
-    )
+    ('student',              'Student'),
+    ('work_supervisor',      'Workplace Supervisor'),
+    ('academic_supervisor',  'Academic Supervisor'),
+    ('admin',                'Admin'),
+)
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     phone_number = models.CharField(max_length=15, blank=True)
