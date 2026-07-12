@@ -408,3 +408,65 @@ tr:hover td { background: var(--surface2); }
   .workflow-steps { flex-direction: column; }
   .workflow-arrow { transform: rotate(90deg); }
 }
+
+/* ── ADMIN LAYOUT ────────────────────────────────────────────── */
+.admin-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 60px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+}
+
+.admin-navbar-brand {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.admin-navbar-title {
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 700;
+}
+.admin-navbar-title span { color: var(--accent2); }
+
+.admin-navbar-right {
+  display: flex; align-items: center; gap: 16px;
+}
+
+.admin-body {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 36px 32px;
+}
+
+/* ── ADMIN TABS ──────────────────────────────────────────────── */
+.admin-tabs {
+  display: flex; gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.admin-tab {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
+  background: none; border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted); font-size: 14px; font-weight: 500;
+  cursor: pointer; font-family: var(--font-body);
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+.admin-tab:hover { color: var(--text); }
+.admin-tab.active {
+  color: var(--accent2);
+  border-bottom-color: var(--accent);
+}
+
+/* ── EMPTY STATE SVG ─────────────────────────────────────────── */
+.empty-icon-svg {
+  display: flex; justify-content: center;
+  margin-bottom: 12px; opacity: 0.3;
+  transform: scale(2);
+}

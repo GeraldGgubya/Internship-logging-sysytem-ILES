@@ -1,20 +1,20 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+
 import api from "../../services/api";
 import Sidebar from "../../components/Sidebar";
 
 const NAV = [
-    { icon: "🏠", label: "Dashboard",    path: "/academicsupervisor/dashboard" },
-    { icon: "📝", label: "Final Sign-off", path: "/academicsupervisor/reviewlogs" },
-    { icon: "📊", label: "Evaluations",  path: "/academicsupervisor/evaluations" },
-    { icon: "👥", label: "Students",     path: "/academicsupervisor/students" },
+    { icon: "home", label: "Dashboard",    path: "/academicsupervisor/dashboard" },
+    { icon: "signoff", label: "Final Sign-off", path: "/academicsupervisor/reviewlogs" },
+    { icon: "evaluations", label: "Evaluations",  path: "/academicsupervisor/evaluations" },
+    { icon: "students", label: "Students",     path: "/academicsupervisor/students" },
 ];
 
 function AcademicSupervisorDashboard() {
     const [data, setData]       = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError]     = useState("");
-    const location = useLocation();
+    
 
     useEffect(() => {
         api.get("/users/supervisor-dashboard/")
@@ -25,7 +25,7 @@ function AcademicSupervisorDashboard() {
 
     return (
         <div className="app-layout">
-            <Sidebar navItems={NAV} role="Academic Supervisor" activePath={location.pathname} />
+            <Sidebar navItems={NAV} role="Academic Supervisor"  />
 
             <main className="main">
                 <div className="page-header">

@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+
 import api from "../../services/api";
 import Sidebar from "../../components/Sidebar";
 
 const NAV = [
-    { icon: "🏠", label: "Dashboard",    path: "/worksupervisor/dashboard" },
-    { icon: "📝", label: "Review Logs",  path: "/worksupervisor/reviewlogs" },
-    { icon: "👥", label: "My Students",  path: "/worksupervisor/students" },
+    { icon: "home", label: "Dashboard",    path: "/worksupervisor/dashboard" },
+    { icon: "review", label: "Review Logs",  path: "/worksupervisor/reviewlogs" },
+    { icon: "students", label: "My Students",  path: "/worksupervisor/students" },
 ];
 
 function WorkSupervisorDashboard() {
     const [data, setData]       = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError]     = useState("");
-    const location = useLocation();
+    
 
     useEffect(() => {
         api.get("/users/supervisor-dashboard/")
@@ -24,7 +24,7 @@ function WorkSupervisorDashboard() {
 
     return (
         <div className="app-layout">
-            <Sidebar navItems={NAV} role="Workplace Supervisor" activePath={location.pathname} />
+            <Sidebar navItems={NAV} role="Workplace Supervisor"  />
 
             <main className="main">
                 <div className="page-header">

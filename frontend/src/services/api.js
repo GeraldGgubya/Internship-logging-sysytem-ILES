@@ -1,8 +1,8 @@
 import axios from "axios";
 
-const BASE_URL = "http://127.0.0.1:8000/api";
+// ─── Change this to your deployed URL when going to production ───
+export const BASE_URL = "http://127.0.0.1:8000/api";
 
-// Shared axios instance — all requests go through here
 const api = axios.create({ baseURL: BASE_URL });
 
 // Attach JWT token to every request automatically
@@ -12,7 +12,7 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// Auto-refresh token on 401, otherwise redirect to login
+// Auto-refresh expired token, redirect to login if refresh also fails
 api.interceptors.response.use(
     (res) => res,
     async (err) => {
@@ -29,11 +29,11 @@ api.interceptors.response.use(
                 } catch {
                     localStorage.clear();
                     window.location.href = "/";
+                    return;
                 }
-            } else {
-                localStorage.clear();
-                window.location.href = "/";
             }
+            localStorage.clear();
+            window.location.href = "/";
         }
         return Promise.reject(err);
     }

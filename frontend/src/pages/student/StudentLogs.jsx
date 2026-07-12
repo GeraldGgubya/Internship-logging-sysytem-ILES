@@ -4,10 +4,10 @@ import api from "../../services/api";
 import Sidebar from "../../components/Sidebar";
 
 const NAV = [
-    { icon: "🏠", label: "Dashboard",    path: "/student/dashboard" },
-    { icon: "🏢", label: "My Placement", path: "/student/placement" },
-    { icon: "📝", label: "Weekly Logs",  path: "/student/logs" },
-    { icon: "📊", label: "Evaluations",  path: "/student/evaluations" },
+    { icon: "home", label: "Dashboard",    path: "/student/dashboard" },
+    { icon: "placement", label: "My Placement", path: "/student/placement" },
+    { icon: "logs", label: "Weekly Logs",  path: "/student/logs" },
+    { icon: "evaluations", label: "Evaluations",  path: "/student/evaluations" },
 ];
 
 const STATUS_BADGE = {
@@ -22,7 +22,7 @@ function StudentLogs() {
     const [logs, setLogs]       = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError]     = useState("");
-    const location = useLocation();
+    
     const navigate = useNavigate();
 
     const load = () => {
@@ -37,7 +37,7 @@ function StudentLogs() {
 
     return (
         <div className="app-layout">
-            <Sidebar navItems={NAV} role="Student" activePath={location.pathname} />
+            <Sidebar navItems={NAV} role="Student"  />
 
             <main className="main">
                 <div className="page-header">
