@@ -1,523 +1,118 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+import { useState, useEffect } from "react";
+import api from "../../services/api";
+import Sidebar from "../../components/Sidebar";
 
-/* ── RESET & TOKENS ─────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+const NAV = [
+    { icon: "home",        label: "Dashboard",    path: "/student/dashboard" },
+    { icon: "placement",   label: "My Placement", path: "/student/placement" },
+    { icon: "logs",        label: "Weekly Logs",  path: "/student/logs" },
+    { icon: "evaluations", label: "Evaluations",  path: "/student/evaluations" },
+];
 
-:root {
-  --bg:           #0f1117;
-  --surface:      #1a1d27;
-  --surface2:     #22263a;
-  --border:       #2e3350;
-  --accent:       #6c63ff;
-  --accent2:      #a78bfa;
-  --accent-glow:  rgba(108, 99, 255, 0.15);
-  --green:        #34d399;
-  --red:          #f87171;
-  --yellow:       #fbbf24;
-  --blue:         #60a5fa;
-  --text:         #e8eaf0;
-  --muted:        #8b93b0;
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body:    'Inter', sans-serif;
-  --radius:       12px;
-  --radius-sm:    8px;
-  --shadow:       0 4px 24px rgba(0, 0, 0, 0.4);
+function StudentDashboard() {
+    const [placement, setPlacement] = useState(null);
+    const [logs, setLogs]           = useState([]);
+    const [loading, setLoading]     = useState(true);
+    const [error, setError]         = useState("");
+    const username = localStorage.getItem("username") || "Student";
+
+    useEffect(() => {
+        // Fetch placement + logs directly — don't rely on dashboard endpoint
+        Promise.all([api.get("/placements/"), api.get("/weeklylogs/")])
+            .then(([pRes, lRes]) => {
+                const placements = Array.isArray(pRes.data) ? pRes.data : pRes.data.results || [];
+                const allLogs    = Array.isArray(lRes.data) ? lRes.data : lRes.data.results || [];
+                setPlacement(placements[0] || null);
+                setLogs(allLogs);
+                setError("");
+            })
+            .catch(err => {
+                const status = err.response?.status;
+                if (status === 403) setError("Access denied. Make sure your account has the 'student' role and you are logged in with the correct account.");
+                else setError(`Could not load dashboard data (${status || "network error"}).`);
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
+    const submittedLogs = logs.filter(l => l.status !== "draft").length;
+    const approvedLogs  = logs.filter(l => l.status === "approved").length;
+    const pendingLogs   = logs.filter(l => l.status === "returned").length;
+
+    return (
+        <div className="app-layout">
+            <Sidebar navItems={NAV} role="Student" />
+            <main className="main">
+                <div className="page-header">
+                    <h1 className="page-title">Hello, {username} 👋</h1>
+                    <p className="page-sub">Here's your internship overview</p>
+                </div>
+
+                {error && <div className="alert alert-error">⚠ {error}</div>}
+
+                {loading ? (
+                    <div className="loading-center"><span className="spinner spinner-lg" /><p>Loading…</p></div>
+                ) : (
+                    <>
+                        <div className="stats-grid">
+                            <div className="stat-card">
+                                <div className="stat-label">Company</div>
+                                <div className="stat-value stat-accent">
+                                    {placement?.company_name || "Not assigned yet"}
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-label">Logs Submitted</div>
+                                <div className="stat-value stat-green">{submittedLogs}</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-label">Logs Approved</div>
+                                <div className="stat-value stat-green">{approvedLogs}</div>
+                            </div>
+                            {pendingLogs > 0 && (
+                                <div className="stat-card">
+                                    <div className="stat-label">Needs Revision</div>
+                                    <div className="stat-value stat-yellow">{pendingLogs}</div>
+                                </div>
+                            )}
+                        </div>
+
+                        {placement && (
+                            <div className="card">
+                                <div className="card-title">My Placement</div>
+                                <div className="detail-row">
+                                    <span className="detail-label">Company</span>
+                                    <strong>{placement.company_name}</strong>
+                                </div>
+                                <div className="detail-row">
+                                    <span className="detail-label">Workplace Supervisor</span>
+                                    <span>{placement.supervisor_name}</span>
+                                </div>
+                                <div className="detail-row">
+                                    <span className="detail-label">Duration</span>
+                                    <span>{placement.startdate} → {placement.enddate}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {pendingLogs > 0 && (
+                            <div className="alert alert-error" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                ⚠ You have {pendingLogs} log(s) returned for revision. Go to <strong>Weekly Logs</strong> to resubmit.
+                            </div>
+                        )}
+
+                        <div className="card">
+                            <div className="card-title">Getting started</div>
+                            <p className="card-body">
+                                Submit your weekly logs before the deadline. Your workplace supervisor
+                                will review and either approve or return them for changes. Once approved,
+                                your academic supervisor gives the final sign-off and evaluation.
+                            </p>
+                        </div>
+                    </>
+                )}
+            </main>
+        </div>
+    );
 }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── LOGIN ───────────────────────────────────────────────────── */
-.login-wrap {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background:
-    radial-gradient(ellipse at 65% 0%, rgba(108, 99, 255, 0.18) 0%, transparent 55%),
-    radial-gradient(ellipse at 15% 100%, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
-    var(--bg);
-}
-
-.login-card {
-  width: 100%;
-  max-width: 420px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 44px 40px;
-  box-shadow: var(--shadow);
-}
-
-.login-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 32px;
-}
-
-.login-logo-icon {
-  width: 40px; height: 40px;
-  background: var(--accent);
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
-}
-
-.login-logo-text { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
-.login-logo-text span { color: var(--accent2); }
-.login-title { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 6px; }
-.login-sub   { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
-
-/* ── FORM FIELDS ─────────────────────────────────────────────── */
-.field { margin-bottom: 18px; }
-
-.field label {
-  display: block;
-  font-size: 11px; font-weight: 600;
-  color: var(--muted);
-  margin-bottom: 6px;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-
-.field input,
-.field select,
-.field textarea {
-  width: 100%;
-  padding: 12px 14px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-}
-
-.field input::placeholder,
-.field textarea::placeholder { color: var(--muted); }
-
-.field textarea { resize: vertical; min-height: 90px; }
-
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-.form-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-}
-
-/* ── BUTTONS ─────────────────────────────────────────────────── */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 11px 20px;
-  border-radius: var(--radius-sm);
-  border: none;
-  font-family: var(--font-body); font-size: 14px; font-weight: 600;
-  cursor: pointer;
-  transition: all 0.18s;
-}
-
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover:not(:disabled) {
-  background: #7c73ff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4);
-}
-.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
-
-.btn-ghost  { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-
-.btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(248,113,113,0.4); }
-.btn-danger:hover { background: rgba(248,113,113,0.08); }
-
-.btn-success { background: var(--green); color: #0f1117; font-weight: 700; }
-.btn-success:hover:not(:disabled) { background: #5dedd5; }
-.btn-success:disabled { opacity: 0.55; cursor: not-allowed; }
-
-.btn-full { width: 100%; }
-.btn-sm   { padding: 7px 14px; font-size: 13px; }
-
-/* ── ALERTS ──────────────────────────────────────────────────── */
-.alert {
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  font-size: 13px;
-  margin-bottom: 16px;
-}
-.alert-error   { background: rgba(248,113,113,0.1);  border: 1px solid var(--red);   color: var(--red); }
-.alert-success { background: rgba(52,211,153,0.1);   border: 1px solid var(--green); color: var(--green); }
-
-/* ── SPINNER ─────────────────────────────────────────────────── */
-.spinner {
-  display: inline-block;
-  width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,0.25);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.65s linear infinite;
-  flex-shrink: 0;
-}
-.spinner-lg { width: 32px; height: 32px; border-width: 3px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.loading-center {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 14px; min-height: 200px;
-  color: var(--muted); font-size: 14px;
-}
-
-/* ── APP LAYOUT ──────────────────────────────────────────────── */
-.app-layout { display: flex; min-height: 100vh; }
-
-/* ── SIDEBAR ─────────────────────────────────────────────────── */
-.sidebar {
-  width: 240px; min-height: 100vh;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  padding: 24px 0 0;
-  position: fixed; top: 0; left: 0; bottom: 0;
-}
-
-.sidebar-logo {
-  display: flex; align-items: center; gap: 10px;
-  padding: 0 20px 24px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 12px;
-}
-
-.sidebar-logo-icon {
-  width: 34px; height: 34px;
-  background: var(--accent); border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex-shrink: 0;
-}
-
-.sidebar-logo-text { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
-.sidebar-logo-text span { color: var(--accent2); }
-
-.nav-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 11px 20px;
-  color: var(--muted); font-size: 14px; font-weight: 500;
-  cursor: pointer; border: none;
-  border-left: 3px solid transparent;
-  background: none; width: 100%; text-align: left;
-  transition: color 0.15s, background 0.15s;
-}
-.nav-item:hover { color: var(--text); background: var(--surface2); }
-.nav-item.active {
-  color: var(--accent2);
-  background: var(--accent-glow);
-  border-left-color: var(--accent);
-}
-.nav-icon { font-size: 17px; width: 22px; text-align: center; }
-
-.sidebar-bottom {
-  margin-top: auto;
-  padding: 16px 20px;
-  border-top: 1px solid var(--border);
-}
-
-.user-chip { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-
-.avatar {
-  width: 34px; height: 34px; border-radius: 50%;
-  background: var(--accent);
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0;
-}
-
-.user-name { font-size: 13px; font-weight: 600; }
-.user-role { font-size: 11px; color: var(--muted); text-transform: capitalize; }
-
-/* ── MAIN ────────────────────────────────────────────────────── */
-.main { margin-left: 240px; flex: 1; padding: 36px 40px; }
-
-.page-header  { margin-bottom: 28px; }
-.page-title   { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 4px; }
-.page-sub     { color: var(--muted); font-size: 14px; }
-
-/* ── STAT CARDS ──────────────────────────────────────────────── */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px; margin-bottom: 24px;
-}
-
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 22px 20px;
-}
-
-.stat-label {
-  font-size: 11px; color: var(--muted); font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px;
-}
-
-.stat-value        { font-family: var(--font-display); font-size: 30px; font-weight: 700; }
-.stat-accent       { color: var(--accent2); font-size: 18px; }
-.stat-green        { color: var(--green); }
-.stat-yellow       { color: var(--yellow); }
-
-/* ── CARDS ───────────────────────────────────────────────────── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px; margin-bottom: 20px;
-}
-
-.card-title {
-  font-family: var(--font-display); font-size: 15px; font-weight: 600;
-  margin-bottom: 16px;
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-}
-
-.card-body { color: var(--muted); font-size: 14px; line-height: 1.7; }
-
-.detail-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px;
-}
-.detail-row:last-child { border-bottom: none; }
-.detail-label { color: var(--muted); font-size: 13px; }
-
-/* ── TABLE ───────────────────────────────────────────────────── */
-.table-wrap { overflow-x: auto; }
-
-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-th {
-  text-align: left; padding: 10px 14px;
-  color: var(--muted); font-size: 11px; font-weight: 600;
-  letter-spacing: 0.06em; text-transform: uppercase;
-  border-bottom: 1px solid var(--border);
-}
-td { padding: 13px 14px; border-bottom: 1px solid var(--border); }
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: var(--surface2); }
-
-.text-muted { color: var(--muted); }
-.text-sm    { font-size: 13px; }
-
-/* ── BADGES ──────────────────────────────────────────────────── */
-.badge {
-  display: inline-block; padding: 3px 10px;
-  border-radius: 999px; font-size: 12px; font-weight: 600;
-}
-.badge-green  { background: rgba(52,211,153,0.12);  color: var(--green); }
-.badge-yellow { background: rgba(251,191,36,0.12);  color: var(--yellow); }
-.badge-purple { background: var(--accent-glow);      color: var(--accent2); }
-.badge-red    { background: rgba(248,113,113,0.12); color: var(--red); }
-.badge-blue   { background: rgba(96,165,250,0.12);  color: var(--blue); }
-
-/* ── MODAL ───────────────────────────────────────────────────── */
-.modal-backdrop {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100; padding: 16px;
-}
-
-.modal {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px; padding: 28px;
-  width: 100%; max-width: 520px;
-  box-shadow: var(--shadow);
-}
-
-.modal-title {
-  font-family: var(--font-display); font-size: 18px; font-weight: 700;
-  margin-bottom: 16px;
-}
-
-.modal-actions {
-  display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;
-}
-
-/* ── EMPTY STATE ─────────────────────────────────────────────── */
-.empty-state {
-  text-align: center; padding: 48px 24px; color: var(--muted);
-}
-.empty-icon { font-size: 40px; margin-bottom: 12px; }
-
-/* ── WORKFLOW STEPS ──────────────────────────────────────────── */
-.workflow-steps {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-
-.workflow-step {
-  display: flex; align-items: flex-start; gap: 12px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  flex: 1; min-width: 140px;
-}
-
-.workflow-step.active-step {
-  border-color: var(--accent);
-  background: var(--accent-glow);
-}
-
-.step-icon { font-size: 22px; flex-shrink: 0; }
-
-.step-text {
-  display: flex; flex-direction: column; gap: 4px;
-}
-
-.step-text strong { font-size: 13px; font-weight: 600; color: var(--text); }
-.step-text span   { font-size: 12px; color: var(--muted); }
-
-.workflow-arrow { color: var(--muted); font-size: 20px; flex-shrink: 0; }
-
-/* ── RESPONSIVE ──────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .sidebar      { display: none; }
-  .main         { margin-left: 0; padding: 20px 16px; }
-  .stats-grid   { grid-template-columns: 1fr 1fr; }
-  .form-grid    { grid-template-columns: 1fr; }
-  .login-card   { padding: 32px 24px; margin: 16px; }
-  .workflow-steps { flex-direction: column; }
-  .workflow-arrow { transform: rotate(90deg); }
-}
-
-/* ── ADMIN LAYOUT ────────────────────────────────────────────── */
-.admin-navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 32px;
-  height: 60px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; z-index: 50;
-}
-
-.admin-navbar-brand {
-  display: flex; align-items: center; gap: 10px;
-}
-
-.admin-navbar-title {
-  font-family: var(--font-display);
-  font-size: 17px; font-weight: 700;
-}
-.admin-navbar-title span { color: var(--accent2); }
-
-.admin-navbar-right {
-  display: flex; align-items: center; gap: 16px;
-}
-
-.admin-body {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 36px 32px;
-}
-
-/* ── ADMIN TABS ──────────────────────────────────────────────── */
-.admin-tabs {
-  display: flex; gap: 4px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 4px;
-}
-
-.admin-tab {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 18px;
-  background: none; border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--muted); font-size: 14px; font-weight: 500;
-  cursor: pointer; font-family: var(--font-body);
-  transition: color 0.15s, border-color 0.15s;
-  margin-bottom: -1px;
-}
-.admin-tab:hover { color: var(--text); }
-.admin-tab.active {
-  color: var(--accent2);
-  border-bottom-color: var(--accent);
-}
-
-/* ── EMPTY STATE SVG ─────────────────────────────────────────── */
-.empty-icon-svg {
-  display: flex; justify-content: center;
-  margin-bottom: 12px; opacity: 0.3;
-  transform: scale(2);
-}
-
-/* ── LOG CONTENT BOX ─────────────────────────────────────────── */
-.log-content-box {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 16px;
-  font-size: 14px;
-  line-height: 1.8;
-  color: var(--text);
-  white-space: pre-wrap;
-  max-height: 320px;
-  overflow-y: auto;
-}
-
-/* ── FEEDBACK BOX ────────────────────────────────────────────── */
-.feedback-box {
-  background: rgba(248,113,113,0.06);
-  border: 1px solid rgba(248,113,113,0.25);
-  border-radius: var(--radius-sm);
-  padding: 12px 14px;
-  font-size: 13px;
-  line-height: 1.7;
-  color: var(--text);
-  white-space: pre-wrap;
-}
-
-/* ── GRADE CHIP ──────────────────────────────────────────────── */
-.grade-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 8px 14px;
-}
-.grade-chip-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-}
-.grade-chip-range {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-/* ── STAT COLOR HELPERS ──────────────────────────────────────── */
-.stat-blue   { color: var(--blue); }
-.stat-yellow { color: var(--yellow); }
-.stat-red    { color: var(--red); }
+export default StudentDashboard;
