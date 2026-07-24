@@ -2,7 +2,6 @@ from rest_framework.permissions import BasePermission
 
 
 class IsStudent(BasePermission):
-    """Allows access only to users with role='student'."""
     def has_permission(self, request, view):
         return bool(
             request.user and
@@ -12,7 +11,6 @@ class IsStudent(BasePermission):
 
 
 class IsSupervisor(BasePermission):
-    """Allows access to both work_supervisor and academic_supervisor."""
     def has_permission(self, request, view):
         return bool(
             request.user and
@@ -22,7 +20,6 @@ class IsSupervisor(BasePermission):
 
 
 class IsWorkSupervisor(BasePermission):
-    """Allows access only to workplace supervisors."""
     def has_permission(self, request, view):
         return bool(
             request.user and
@@ -32,7 +29,6 @@ class IsWorkSupervisor(BasePermission):
 
 
 class IsAcademicSupervisor(BasePermission):
-    """Allows access only to academic supervisors."""
     def has_permission(self, request, view):
         return bool(
             request.user and
@@ -42,20 +38,32 @@ class IsAcademicSupervisor(BasePermission):
 
 
 class IsAdmin(BasePermission):
-    """Allows access only to admin users."""
+    """
+    Allows access to:
+    - Users with role='admin'
+    - Django superusers (created via createsuperuser)
+    - Staff users (is_staff=True)
+    """
     def has_permission(self, request, view):
         return bool(
             request.user and
             request.user.is_authenticated and
-            request.user.role == 'admin'
+            (
+                request.user.role == 'admin' or
+                request.user.is_superuser or
+                request.user.is_staff
+            )
         )
 
 
 class IsAdminOrReadOnly(BasePermission):
-    """Admin can do everything; others can only read (GET)."""
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
             return False
         if request.method in ('GET', 'HEAD', 'OPTIONS'):
             return True
-        return request.user.role == 'admin'
+        return (
+            request.user.role == 'admin' or
+            request.user.is_superuser or
+            request.user.is_staff
+        )
