@@ -3,7 +3,6 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
 from users.serializers import MyTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
-from users.views import create_admin
 from .router import router
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -15,5 +14,4 @@ urlpatterns = [
     path('api/refresh/',      TokenRefreshView.as_view()),
     path('api/',              include(router.urls)),
     path('api/users/',        include('users.urls')),
-    path('api/create-admin/', create_admin),   # ← moved here
 ]
