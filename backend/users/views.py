@@ -50,14 +50,3 @@ def supervisor_dashboard(request):
         'total_students': students.count(),
         'total_logs':     logs.count(),
     })
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def reset_admin(request):
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
-    u = User.objects.filter(email="admin@uni.ac.ug").first()
-    if u:
-        u.set_password("Admin123")
-        u.save()
-        return Response({"message": "Password reset to Admin123"})
-    return Response({"message": "User not found"})
