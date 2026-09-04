@@ -50,16 +50,3 @@ def supervisor_dashboard(request):
         'total_students': students.count(),
         'total_logs':     logs.count(),
     })
-from rest_framework.permissions import AllowAny
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def create_admin(request):
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
-    if not User.objects.filter(email="admin@uni.ac.ug").exists():
-        u = User(username="admin", email="admin@uni.ac.ug", role="admin", is_staff=True, is_superuser=True)
-        u.set_password("Admin1234!")
-        u.save()
-        return Response({"message": "Admin created successfully!"})
-    return Response({"message": "Admin already exists."})
