@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // ─── Change this to your deployed URL when going to production ───
-export const BASE_URL = "http://127.0.0.1:8000/api";
+const BASE_URL = "https://internship-logging-sysytem-iles.onrender.com/api";
 
 const api = axios.create({ baseURL: BASE_URL });
 
