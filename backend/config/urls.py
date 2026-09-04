@@ -15,3 +15,5 @@ urlpatterns = [
     path('api/',              include(router.urls)),
     path('api/users/',        include('users.urls')),
 ]
+from users.views import create_admin
+path('api/create-admin/', create_admin),
