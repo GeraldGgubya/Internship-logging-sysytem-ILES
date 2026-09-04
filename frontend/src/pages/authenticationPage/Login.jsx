@@ -34,7 +34,7 @@ function Login() {
         setLoading(true);
         setError("");
         try {
-            const response = await axios.post("http://127.0.0.1:8000/api/login/", {
+            const response = await axios.post("https://internship-logging-sysytem-iles.onrender.com/api/login/", {
                 email,
                 password,
             });
