@@ -19,7 +19,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        # ✅ cover superusers and staff as well as role='admin'
         if user.role == 'admin' or user.is_superuser or user.is_staff:
             return User.objects.all().order_by('id')
         return User.objects.none()
@@ -51,8 +50,3 @@ def supervisor_dashboard(request):
         'total_students': students.count(),
         'total_logs':     logs.count(),
     })
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
