@@ -661,3 +661,8 @@ tr:hover td { background: var(--surface2); }
 /* But don't slow down animations */
 .spinner { transition: none !important; }
 .theme-toggle-thumb { transition: transform 0.2s, background 0.2s !important; }
+
+/* ── NAVIGATION FIX ──────────────────────────────────────────── */
+/* Ensure all buttons are always clickable regardless of transitions */
+button { pointer-events: all !important; cursor: pointer !important; }
+.nav-item { pointer-events: all !important; cursor: pointer !important; }
