@@ -2,19 +2,14 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 
 function Sidebar({ navItems, role }) {
-    const navigate  = useNavigate();
-    const location  = useLocation();
-    const username  = localStorage.getItem("username") || "User";
+    const navigate = useNavigate();
+    const location = useLocation();
+    const username = localStorage.getItem("username") || "User";
     const { theme, toggleTheme } = useTheme();
 
     const handleLogout = () => {
         localStorage.clear();
         navigate("/");
-    };
-
-    const handleNav = (path) => {
-        // Force navigation even if already on the page
-        navigate(path, { replace: false });
     };
 
     const icons = {
@@ -55,35 +50,37 @@ function Sidebar({ navItems, role }) {
                 <div className="sidebar-logo-text">ILES <span>Portal</span></div>
             </div>
 
-            <nav style={{ flex: 1 }}>
-                {navItems.map(item => {
-                    const isActive = location.pathname === item.path;
+            <nav>
+                {navItems.map((item) => {
+                    // Check if current path starts with item path for nested routes
+                    const isActive = location.pathname === item.path ||
+                                     location.pathname.startsWith(item.path + "/");
                     return (
-                        <button
+                        <div
                             key={item.path}
                             className={`nav-item${isActive ? " active" : ""}`}
-                            onClick={() => handleNav(item.path)}
-                            style={{
-                                // Remove transition interference on nav buttons
-                                transition: "color 0.15s, background 0.15s",
-                                cursor: "pointer",
-                                pointerEvents: "all",
-                            }}
+                            onClick={() => navigate(item.path)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => e.key === "Enter" && navigate(item.path)}
+                            style={{ cursor: "pointer" }}
                         >
-                            <span className="nav-icon">{icons[item.icon] || icons.home}</span>
+                            <span className="nav-icon">
+                                {icons[item.icon] || icons.home}
+                            </span>
                             {item.label}
-                        </button>
+                        </div>
                     );
                 })}
             </nav>
 
             <div className="sidebar-bottom">
-                {/* Theme toggle */}
-                <button
+                <div
                     className="theme-toggle"
                     onClick={toggleTheme}
-                    title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-                    style={{ cursor: "pointer", pointerEvents: "all" }}
+                    role="button"
+                    tabIndex={0}
+                    style={{ cursor: "pointer" }}
                 >
                     <span className="theme-toggle-icon">
                         {theme === "dark" ? <SunIcon /> : <MoonIcon />}
@@ -94,7 +91,7 @@ function Sidebar({ navItems, role }) {
                     <span className="theme-toggle-track">
                         <span className={`theme-toggle-thumb ${theme === "light" ? "on" : ""}`} />
                     </span>
-                </button>
+                </div>
 
                 <div className="user-chip">
                     <div className="avatar">{username[0]?.toUpperCase()}</div>
@@ -103,13 +100,15 @@ function Sidebar({ navItems, role }) {
                         <div className="user-role">{role}</div>
                     </div>
                 </div>
-                <button
+                <div
                     className="btn btn-danger btn-full btn-sm"
                     onClick={handleLogout}
-                    style={{ cursor: "pointer", pointerEvents: "all" }}
+                    role="button"
+                    tabIndex={0}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                 >
                     Sign out
-                </button>
+                </div>
             </div>
         </aside>
     );

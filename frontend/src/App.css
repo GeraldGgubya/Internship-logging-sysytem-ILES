@@ -666,3 +666,24 @@ tr:hover td { background: var(--surface2); }
 /* Ensure all buttons are always clickable regardless of transitions */
 button { pointer-events: all !important; cursor: pointer !important; }
 .nav-item { pointer-events: all !important; cursor: pointer !important; }
+
+/* ── FINAL NAV FIX ───────────────────────────────────────────── */
+/* Remove transition from ALL interactive elements */
+button, .nav-item, .btn, [role="button"] {
+  transition: color 0.15s, background 0.15s, border-color 0.15s !important;
+  /* Remove the theme transition delay that was blocking clicks */
+  background-color: unset;
+}
+/* Restore nav-item styling */
+.nav-item {
+  background-color: transparent !important;
+}
+.nav-item:hover {
+  color: var(--text) !important;
+  background: var(--surface2) !important;
+}
+.nav-item.active {
+  color: var(--accent2) !important;
+  background: var(--accent-glow) !important;
+  border-left-color: var(--accent) !important;
+}
