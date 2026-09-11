@@ -1,25 +1,28 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+// Student layout — persistent sidebar fix
+import StudentLayout from "./components/StudentLayout";
+
 // Auth
 import Login from "./pages/authenticationPage/Login";
 
 // Admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
-// Student
+// Student pages — no sidebar (StudentLayout handles it)
 import StudentDashboard   from "./pages/student/StudentDashboard";
 import StudentLogs        from "./pages/student/StudentLogs";
 import CreateLog          from "./pages/student/CreateLog";
 import StudentPlacement   from "./pages/student/StudentPlacement";
 import StudentEvaluations from "./pages/student/StudentEvaluations";
 
-// Work Supervisor
+// Work Supervisor — unchanged, keep their own sidebars
 import WorkSupervisorDashboard  from "./pages/worksupervisor/WorkSupervisorDashboard";
 import WorkSupervisorReviewLogs from "./pages/worksupervisor/WorkSupervisorReviewLogs";
 import WorkSupervisorStudents   from "./pages/worksupervisor/WorkSupervisorStudents";
 
-// Academic Supervisor
+// Academic Supervisor — unchanged, keep their own sidebars
 import AcademicSupervisorDashboard from "./pages/academicsupervisor/AcademicSupervisorDashboard";
 import AcademicReviewLogs          from "./pages/academicsupervisor/AcademicReviewLogs";
 import AcademicEvaluations         from "./pages/academicsupervisor/AcademicEvaluations";
@@ -28,49 +31,27 @@ import AcademicStudents            from "./pages/academicsupervisor/AcademicStud
 function App() {
     return (
         <Routes>
-            {/* ── PUBLIC ── */}
+            {/* Public */}
             <Route path="/" element={<Login />} />
 
-            {/* ── ADMIN ── */}
+            {/* Admin */}
             <Route path="/admin/dashboard" element={
-                <ProtectedRoute allowedRoles={["admin"]}>
-                    <AdminDashboard />
-                </ProtectedRoute>
+                <ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>
             } />
 
-            {/* ── STUDENT ── */}
-            <Route path="/student/dashboard" element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                    <StudentDashboard />
-                </ProtectedRoute>
-            } />
-            <Route path="/student/logs" element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                    <StudentLogs />
-                </ProtectedRoute>
-            } />
-            <Route path="/student/logs/create" element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                    <CreateLog />
-                </ProtectedRoute>
-            } />
-            <Route path="/student/logs/:id/edit" element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                    <CreateLog />
-                </ProtectedRoute>
-            } />
-            <Route path="/student/placement" element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                    <StudentPlacement />
-                </ProtectedRoute>
-            } />
-            <Route path="/student/evaluations" element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                    <StudentEvaluations />
-                </ProtectedRoute>
-            } />
+            {/* ── STUDENT — persistent sidebar via layout ── */}
+            <Route path="/student" element={
+                <ProtectedRoute allowedRoles={["student"]}><StudentLayout /></ProtectedRoute>
+            }>
+                <Route path="dashboard"     element={<StudentDashboard />} />
+                <Route path="placement"     element={<StudentPlacement />} />
+                <Route path="logs"          element={<StudentLogs />} />
+                <Route path="logs/create"   element={<CreateLog />} />
+                <Route path="logs/:id/edit" element={<CreateLog />} />
+                <Route path="evaluations"   element={<StudentEvaluations />} />
+            </Route>
 
-            {/* ── WORK SUPERVISOR ── */}
+            {/* ── WORK SUPERVISOR — unchanged ── */}
             <Route path="/worksupervisor/dashboard" element={
                 <ProtectedRoute allowedRoles={["work_supervisor"]}>
                     <WorkSupervisorDashboard />
@@ -87,7 +68,7 @@ function App() {
                 </ProtectedRoute>
             } />
 
-            {/* ── ACADEMIC SUPERVISOR ── */}
+            {/* ── ACADEMIC SUPERVISOR — unchanged ── */}
             <Route path="/academicsupervisor/dashboard" element={
                 <ProtectedRoute allowedRoles={["academic_supervisor"]}>
                     <AcademicSupervisorDashboard />
@@ -109,7 +90,7 @@ function App() {
                 </ProtectedRoute>
             } />
 
-            {/* ── CATCH-ALL → login ── */}
+            {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
